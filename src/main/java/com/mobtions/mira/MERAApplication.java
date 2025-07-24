@@ -4,10 +4,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class MiroApplication {
+public class MERAApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(MiroApplication.class, args);
+		SpringApplication.run(MERAApplication.class, args);
 	}
 
 }

@@ -1,9 +1,10 @@
-package com.mobtions.mira.helper;
+package com.mobtions.mira.enums;
 
 public enum Role {
 	
 	ADMIN,
 	MANAGER,
+	EMPLOYEE,
 	HR,
 	DEVELOPER,
 	INTERN,

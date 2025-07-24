@@ -1,12 +1,16 @@
 package com.mobtions.mira.entity;
 import java.time.LocalDate;
+import java.util.List;
 
-import com.mobtions.mira.helper.Role;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.mobtions.mira.enums.Role;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 
 @Entity
 public class Employee {
@@ -29,7 +33,17 @@ public class Employee {
 	private String aadharNumber;
 	private String panNumber;
 	
+//	Assets
+	@OneToMany(mappedBy = "employee", cascade = CascadeType.ALL)
+	@JsonManagedReference
+	private List<Asset> assets; 
 	
+	public List<Asset> getAssets() {
+		return assets;
+	}
+	public void setAssets(List<Asset> assets) {
+		this.assets = assets;
+	}
 	public int getEmployeeId() {
 		return employeeId;
 	}
