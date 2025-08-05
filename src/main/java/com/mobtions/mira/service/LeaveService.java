@@ -13,9 +13,13 @@ public interface LeaveService {
 	ResponseEntity<ResponseStructure<Leave>> applyLeave(Leave leave, int employeeId);
 
 
+	ResponseEntity<ResponseStructure<Leave>> approveLeave(int leaveId, int approverId);
+
+
 	ResponseEntity<ResponseStructure<List<Leave>>> fetchAllLeavesBasedOnEmployee(int employeeId);
 
 	ResponseEntity<ResponseStructure<List<Leave>>> fetchAllLeaves();
+
 
 	ResponseEntity<ResponseStructure<Leave>> updateLeaveStatus(int leaveId, int approverId, LeaveStatus leaveStatus);
 

@@ -19,8 +19,7 @@ import com.mobtions.mira.service.LeaveService;
 import com.mobtions.mira.util.ResponseStructure;
 
 @Service
-public class LeaveServiceImpl implements LeaveService{
-
+public class LeaveServiceImpl implements LeaveService {
 
 	@Autowired
 	private EmployeeRepository employeeRepository;
@@ -53,91 +52,112 @@ public class LeaveServiceImpl implements LeaveService{
 		return new ResponseEntity<>(structure, HttpStatus.CREATED);
 	}
 
+	@Override
+	public ResponseEntity<ResponseStructure<Leave>> approveLeave(int leaveId, int approverId) {
+		Optional<Leave> optionalLeave = leaveRepository.findById(leaveId);
+		Optional<Employee> optionalApprover = employeeRepository.findById(approverId);
 
-	
-	
+		if (optionalLeave.isEmpty()) {
+			throw new RuntimeException("Leave not found with ID: " + leaveId);
+		}
 
+		if (optionalApprover.isEmpty()) {
+			throw new RuntimeException("Approver not found with ID: " + approverId);
+		}
+
+		Leave leave = optionalLeave.get();
+		Employee approver = optionalApprover.get();
+
+		leave.setLeaveStatus(LeaveStatus.APPROVED);
+		leave.setApprovedBy(approver);
+
+		Leave updatedLeave = leaveRepository.save(leave);
+
+		ResponseStructure<Leave> structure = new ResponseStructure<>();
+		structure.setStatus(HttpStatus.OK.value());
+		structure.setMessage("Leave approved successfully");
+		structure.setData(updatedLeave);
+
+		return new ResponseEntity<>(structure, HttpStatus.OK);
+	}
 
 	@Override
 	public ResponseEntity<ResponseStructure<List<Leave>>> fetchAllLeavesBasedOnEmployee(int employeeId) {
-	    Optional<Employee> optionalEmployee = employeeRepository.findById(employeeId);
+		Optional<Employee> optionalEmployee = employeeRepository.findById(employeeId);
 
-	    if (optionalEmployee.isEmpty()) {
-	        throw new RuntimeException("Employee not found with ID: " + employeeId);
-	    }
+		if (optionalEmployee.isEmpty()) {
+			throw new RuntimeException("Employee not found with ID: " + employeeId);
+		}
 
-	    Employee employee = optionalEmployee.get();
-	    List<Leave> leaves = leaveRepository.findByEmployee(employee);
+		Employee employee = optionalEmployee.get();
+		List<Leave> leaves = leaveRepository.findByEmployee(employee);
 
-	    ResponseStructure<List<Leave>> structure = new ResponseStructure<>();
-	    structure.setStatus(HttpStatus.OK.value());
-	    structure.setMessage("Leaves fetched successfully for employee ID: " + employeeId);
-	    structure.setData(leaves);
+		ResponseStructure<List<Leave>> structure = new ResponseStructure<>();
+		structure.setStatus(HttpStatus.OK.value());
+		structure.setMessage("Leaves fetched successfully for employee ID: " + employeeId);
+		structure.setData(leaves);
 
-	    return new ResponseEntity<>(structure, HttpStatus.OK);
+		return new ResponseEntity<>(structure, HttpStatus.OK);
 	}
-
 
 	@Override
 	public ResponseEntity<ResponseStructure<List<Leave>>> fetchAllLeaves() {
-	    List<Leave> leaves = leaveRepository.findAll();
+		List<Leave> leaves = leaveRepository.findAll();
 
-	    ResponseStructure<List<Leave>> structure = new ResponseStructure<>();
+		ResponseStructure<List<Leave>> structure = new ResponseStructure<>();
 
-	    if (leaves.isEmpty()) {
-	        structure.setStatus(HttpStatus.NO_CONTENT.value());
-	        structure.setMessage("No leave records found");
-	        structure.setData(leaves);
-	        return new ResponseEntity<>(structure, HttpStatus.NO_CONTENT);
-	    }
+		if (leaves.isEmpty()) {
+			structure.setStatus(HttpStatus.NO_CONTENT.value());
+			structure.setMessage("No leave records found");
+			structure.setData(leaves);
+			return new ResponseEntity<>(structure, HttpStatus.NO_CONTENT);
+		}
 
-	    structure.setStatus(HttpStatus.OK.value());
-	    structure.setMessage("All leave records fetched successfully");
-	    structure.setData(leaves);
+		structure.setStatus(HttpStatus.OK.value());
+		structure.setMessage("All leave records fetched successfully");
+		structure.setData(leaves);
 
-	    return new ResponseEntity<>(structure, HttpStatus.OK);
+		return new ResponseEntity<>(structure, HttpStatus.OK);
 	}
-
 
 	@Override
-	public ResponseEntity<ResponseStructure<Leave>> updateLeaveStatus(int leaveId, int approverId, LeaveStatus newStatus) {
-	    Optional<Leave> optionalLeave = leaveRepository.findById(leaveId);
-	    Optional<Employee> optionalApprover = employeeRepository.findById(approverId);
+	public ResponseEntity<ResponseStructure<Leave>> updateLeaveStatus(int leaveId, int approverId,
+			LeaveStatus newStatus) {
+		Optional<Leave> optionalLeave = leaveRepository.findById(leaveId);
+		Optional<Employee> optionalApprover = employeeRepository.findById(approverId);
 
-	    if (optionalLeave.isEmpty()) {
-	        throw new RuntimeException("Leave not found with ID: " + leaveId);
-	    }
+		if (optionalLeave.isEmpty()) {
+			throw new RuntimeException("Leave not found with ID: " + leaveId);
+		}
 
-	    if (optionalApprover.isEmpty()) {
-	        throw new RuntimeException("Approver not found with ID: " + approverId);
-	    }
+		if (optionalApprover.isEmpty()) {
+			throw new RuntimeException("Approver not found with ID: " + approverId);
+		}
 
-	    Leave leave = optionalLeave.get();
-	    Employee approver = optionalApprover.get();
+		Leave leave = optionalLeave.get();
+		Employee approver = optionalApprover.get();
 
-	    Employee leaveTaker = leave.getEmployee();
-	    Employee manager = leaveTaker.getManager();
+		Employee leaveTaker = leave.getEmployee();
+		Employee manager = leaveTaker.getManager();
 
-	    boolean isManager = (manager != null && manager.getEmployeeId() == approverId);
-	    boolean isAdmin = (approver.getRole() == Role.ADMIN);
+		boolean isManager = (manager != null && manager.getEmployeeId() == approverId);
+		boolean isAdmin = (approver.getRole() == Role.ADMIN);
 
-	    if (!isManager && !isAdmin) {
-	        throw new RuntimeException("Only the manager or an admin can change this leave status.");
-	    }
+		if (!isManager && !isAdmin) {
+			throw new RuntimeException("Only the manager or an admin can change this leave status.");
+		}
 
-	    leave.setLeaveStatus(newStatus);
-	    leave.setApprovedBy(approver); // you may choose to only set this if approved
+		leave.setLeaveStatus(newStatus);
+		leave.setApprovedBy(approver); // you may choose to only set this if approved
 
-	    Leave updatedLeave = leaveRepository.save(leave);
+		Leave updatedLeave = leaveRepository.save(leave);
 
-	    ResponseStructure<Leave> structure = new ResponseStructure<>();
-	    structure.setStatus(HttpStatus.OK.value());
-	    structure.setMessage("Leave " + newStatus.name().toLowerCase() + " successfully");
-	    structure.setData(updatedLeave);
+		ResponseStructure<Leave> structure = new ResponseStructure<>();
+		structure.setStatus(HttpStatus.OK.value());
+		structure.setMessage("Leave " + newStatus.name().toLowerCase() + " successfully");
+		structure.setData(updatedLeave);
 
-	    return new ResponseEntity<>(structure, HttpStatus.OK);
+		return new ResponseEntity<>(structure, HttpStatus.OK);
 	}
-
-
 
 }

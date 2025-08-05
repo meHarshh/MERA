@@ -90,6 +90,39 @@ public class EmployeeServiceImpl implements EmployeeService {
 
 
 
+	public ResponseEntity<ResponseStructure<Employee>> addEmployee(Employee employee) {
+		// Check for duplicate official email
+		if (employeeRepository.findByOfficialEmail(employee.getOfficialEmail()).isPresent()) {
+			throw new RuntimeException("Official email already in use: " + employee.getOfficialEmail());
+		}
+
+		// Check for duplicate personal email
+		if (employeeRepository.findByPersonalEmail(employee.getPersonalEmail()).isPresent()) {
+			throw new RuntimeException("Personal email already in use: " + employee.getPersonalEmail());
+		}
+
+		// Check for duplicate employee code
+		if (employeeRepository.findByEmployeeCode(employee.getEmployeeCode()).isPresent()) {
+			throw new RuntimeException("Employee code already exists: " + employee.getEmployeeCode());
+		}
+
+		// Encode password
+		String hashedPassword = passwordEncoder.encode(employee.getPassword());
+		employee.setPassword(hashedPassword);
+
+		// Save employee
+		Employee savedEmployee = employeeRepository.save(employee);
+
+		// Prepare response
+		ResponseStructure<Employee> structure = new ResponseStructure<>();
+		structure.setStatus(HttpStatus.CREATED.value());
+		structure.setMessage("Employee added successfully.");
+		structure.setData(savedEmployee);
+
+		return new ResponseEntity<>(structure, HttpStatus.CREATED);
+	}
+
+
 	@Override
 	public ResponseEntity<ResponseStructure<List<Employee>>> fetchAllEmployees() {
 		List<Employee> employeeList = employeeRepository.findAll();
