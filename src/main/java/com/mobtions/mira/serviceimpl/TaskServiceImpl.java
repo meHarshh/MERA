@@ -1,5 +1,7 @@
 package com.mobtions.mira.serviceimpl;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -68,6 +70,20 @@ public class TaskServiceImpl implements TaskService{
 	    task.setReassignedTo(reassignedTo);
 	    return task;
 	}
+
+
+	@Override
+	public ResponseEntity<ResponseStructure<List<Task>>> fetchAllTask() {
+	    List<Task> allTasks = taskRepository.findAll();
+
+	    ResponseStructure<List<Task>> structure = new ResponseStructure<>();
+	    structure.setStatus(HttpStatus.OK.value());
+	    structure.setMessage("All tasks fetched successfully");
+	    structure.setData(allTasks);
+
+	    return new ResponseEntity<>(structure, HttpStatus.OK);
+	}
+
 
 
 

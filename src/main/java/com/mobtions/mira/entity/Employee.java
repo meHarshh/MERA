@@ -4,7 +4,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.mobtions.mira.enums.Role;
 
@@ -36,7 +35,39 @@ public class Employee {
 	private String dateOfLeaving = null;
 	private String aadharNumber;
 	private String panNumber;
+	
+	private int leavesTaken ;
+	private int wfhTaken ;
+	private int totalLeavesAllowed = 24;
+	private int totalWFHAllowed = 24;
 
+	
+	
+	
+
+	public int getLeavesTaken() {
+		return leavesTaken;
+	}
+
+	public void setLeavesTaken(int leavesTaken) {
+		this.leavesTaken = leavesTaken;
+	}
+
+	public int getWfhTaken() {
+		return wfhTaken;
+	}
+
+	public void setWfhTaken(int wfhTaken) {
+		this.wfhTaken = wfhTaken;
+	}
+
+	public int getTotalLeavesAllowed() {
+		return totalLeavesAllowed;
+	}
+
+	public int getTotalWFHAllowed() {
+		return totalWFHAllowed;
+	}
 
 	@ManyToOne
 	private Employee manager;

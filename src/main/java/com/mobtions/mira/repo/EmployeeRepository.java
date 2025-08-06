@@ -1,5 +1,6 @@
 package com.mobtions.mira.repo;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,5 +14,7 @@ public interface EmployeeRepository extends JpaRepository<Employee, Integer> {
 	Optional<Employee> findByPersonalEmail(String personalEmail);
 
 	Optional<Employee> findByEmployeeCode(String employeeCode);
+
+	List<Employee> findByManager(Employee loggedInUser);
 
 }

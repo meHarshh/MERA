@@ -1,6 +1,7 @@
 package com.mobtions.mira.serviceimpl;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import com.mobtions.mira.entity.Employee;
 import com.mobtions.mira.entity.Leave;
 import com.mobtions.mira.enums.LeaveStatus;
+import com.mobtions.mira.enums.LeaveType;
 import com.mobtions.mira.enums.Role;
 import com.mobtions.mira.repo.EmployeeRepository;
 import com.mobtions.mira.repo.LeaveRepository;
@@ -120,6 +122,46 @@ public class LeaveServiceImpl implements LeaveService {
 		return new ResponseEntity<>(structure, HttpStatus.OK);
 	}
 
+//	@Override
+//	public ResponseEntity<ResponseStructure<Leave>> updateLeaveStatus(int leaveId, int approverId,
+//			LeaveStatus newStatus) {
+//		Optional<Leave> optionalLeave = leaveRepository.findById(leaveId);
+//		Optional<Employee> optionalApprover = employeeRepository.findById(approverId);
+//
+//		if (optionalLeave.isEmpty()) {
+//			throw new RuntimeException("Leave not found with ID: " + leaveId);
+//		}
+//
+//		if (optionalApprover.isEmpty()) {
+//			throw new RuntimeException("Approver not found with ID: " + approverId);
+//		}
+//
+//		Leave leave = optionalLeave.get();
+//		Employee approver = optionalApprover.get();
+//
+//		Employee leaveTaker = leave.getEmployee();
+//		Employee manager = leaveTaker.getManager();
+//
+//		boolean isManager = (manager != null && manager.getEmployeeId() == approverId);
+//		boolean isAdmin = (approver.getRole() == Role.ADMIN);
+//
+//		if (!isManager && !isAdmin) {
+//			throw new RuntimeException("Only the manager or an admin can change this leave status.");
+//		}
+//
+//		leave.setLeaveStatus(newStatus);
+//		leave.setApprovedBy(approver); // you may choose to only set this if approved
+//
+//		Leave updatedLeave = leaveRepository.save(leave);
+//
+//		ResponseStructure<Leave> structure = new ResponseStructure<>();
+//		structure.setStatus(HttpStatus.OK.value());
+//		structure.setMessage("Leave " + newStatus.name().toLowerCase() + " successfully");
+//		structure.setData(updatedLeave);
+//
+//		return new ResponseEntity<>(structure, HttpStatus.OK);
+//	}
+
 	@Override
 	public ResponseEntity<ResponseStructure<Leave>> updateLeaveStatus(int leaveId, int approverId,
 			LeaveStatus newStatus) {
@@ -148,7 +190,19 @@ public class LeaveServiceImpl implements LeaveService {
 		}
 
 		leave.setLeaveStatus(newStatus);
-		leave.setApprovedBy(approver); // you may choose to only set this if approved
+		leave.setApprovedBy(approver);
+
+		if (newStatus == LeaveStatus.APPROVED) {
+			long days = ChronoUnit.DAYS.between(leave.getStartDate(), leave.getEndDate()) + 1;
+
+			if (leave.getLeaveType() == LeaveType.LEAVE) {
+				leaveTaker.setLeavesTaken(leaveTaker.getLeavesTaken() + (int) days);
+			} else if (leave.getLeaveType() == LeaveType.WFH) {
+				leaveTaker.setWfhTaken(leaveTaker.getWfhTaken() + (int) days);
+			}
+
+			employeeRepository.save(leaveTaker); // save updated leave count
+		}
 
 		Leave updatedLeave = leaveRepository.save(leave);
 
