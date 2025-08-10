@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import com.mobtions.mira.dto.EmployeeRequestDTO;
 import com.mobtions.mira.entity.Employee;
+import com.mobtions.mira.enums.Role;
 import com.mobtions.mira.repo.EmployeeRepository;
 import com.mobtions.mira.service.EmployeeService;
 import com.mobtions.mira.util.ResponseStructure;
@@ -78,16 +79,55 @@ public class EmployeeServiceImpl implements EmployeeService {
 	    employee.setAadharNumber(dto.getAadharNumber());
 	    employee.setPanNumber(dto.getPanNumber());
 
-	    // Set manager if provided
+	    // Set manager with role validation
 	    if (dto.getManagerId() != null) {
 	        Employee manager = employeeRepository.findById(dto.getManagerId())
 	            .orElseThrow(() -> new RuntimeException("Manager not found with ID: " + dto.getManagerId()));
+
+	        if (manager.getRole() != Role.MANAGER && manager.getRole() != Role.ADMIN) {
+	            throw new RuntimeException("Employee with ID: " + dto.getManagerId() + " must have MANAGER or ADMIN role to be assigned as a manager.");
+	        }
+
 	        employee.setManager(manager);
 	    }
 
 	    return employee;
 	}
 
+
+
+
+	public ResponseEntity<ResponseStructure<Employee>> addEmployee(Employee employee) {
+		// Check for duplicate official email
+		if (employeeRepository.findByOfficialEmail(employee.getOfficialEmail()).isPresent()) {
+			throw new RuntimeException("Official email already in use: " + employee.getOfficialEmail());
+		}
+
+		// Check for duplicate personal email
+		if (employeeRepository.findByPersonalEmail(employee.getPersonalEmail()).isPresent()) {
+			throw new RuntimeException("Personal email already in use: " + employee.getPersonalEmail());
+		}
+
+		// Check for duplicate employee code
+		if (employeeRepository.findByEmployeeCode(employee.getEmployeeCode()).isPresent()) {
+			throw new RuntimeException("Employee code already exists: " + employee.getEmployeeCode());
+		}
+
+		// Encode password
+		String hashedPassword = passwordEncoder.encode(employee.getPassword());
+		employee.setPassword(hashedPassword);
+
+		// Save employee
+		Employee savedEmployee = employeeRepository.save(employee);
+
+		// Prepare response
+		ResponseStructure<Employee> structure = new ResponseStructure<>();
+		structure.setStatus(HttpStatus.CREATED.value());
+		structure.setMessage("Employee added successfully.");
+		structure.setData(savedEmployee);
+
+		return new ResponseEntity<>(structure, HttpStatus.CREATED);
+	}
 
 
 	@Override
@@ -140,59 +180,64 @@ public class EmployeeServiceImpl implements EmployeeService {
 
 	@Override
 	public ResponseEntity<ResponseStructure<List<Employee>>> login(String email, String password) {
-		String officialEmail = email;
+	    ResponseStructure<List<Employee>> structure = new ResponseStructure<>();
 
-		ResponseStructure<List<Employee>> structure = new ResponseStructure<>();
+	    if (email == null || email.isBlank()) {
+	        structure.setStatus(HttpStatus.BAD_REQUEST.value());
+	        structure.setMessage("Email is required");
+	        structure.setData(null);
+	        return new ResponseEntity<>(structure, HttpStatus.BAD_REQUEST);
+	    }
 
+	    if (password == null || password.isBlank()) {
+	        structure.setStatus(HttpStatus.BAD_REQUEST.value());
+	        structure.setMessage("Password is required");
+	        structure.setData(null);
+	        return new ResponseEntity<>(structure, HttpStatus.BAD_REQUEST);
+	    }
 
-		if (officialEmail == null || officialEmail.isBlank()) {
-			structure.setStatus(HttpStatus.BAD_REQUEST.value());
-			structure.setMessage("Email is required");
-			structure.setData(null);
-			return new ResponseEntity<>(structure, HttpStatus.BAD_REQUEST);
-		}
+	    Optional<Employee> optional = employeeRepository.findByOfficialEmail(email);
 
-		if (password == null || password.isBlank()) {
-			structure.setStatus(HttpStatus.BAD_REQUEST.value());
-			structure.setMessage("Password is required");
-			structure.setData(null);
-			return new ResponseEntity<>(structure, HttpStatus.BAD_REQUEST);
-		}
+	    if (optional.isEmpty()) {
+	        structure.setStatus(HttpStatus.UNAUTHORIZED.value());
+	        structure.setMessage("Invalid email");
+	        structure.setData(null);
+	        return new ResponseEntity<>(structure, HttpStatus.UNAUTHORIZED);
+	    }
 
-		Optional<Employee> optional = employeeRepository.findByOfficialEmail(officialEmail);
+	    Employee loggedInUser = optional.get();
 
+	    if (!passwordEncoder.matches(password, loggedInUser.getPassword())) {
+	        structure.setStatus(HttpStatus.UNAUTHORIZED.value());
+	        structure.setMessage("Invalid password");
+	        structure.setData(null);
+	        return new ResponseEntity<>(structure, HttpStatus.UNAUTHORIZED);
+	    }
 
-		if (optional.isEmpty()) {
-			structure.setStatus(HttpStatus.UNAUTHORIZED.value());
-			structure.setMessage("Invalid email");
-			structure.setData(null);
-			return new ResponseEntity<>(structure, HttpStatus.UNAUTHORIZED);
-		}
+	    List<Employee> responseData;
 
-		Employee loggedInUser = optional.get();
+	    Role role = loggedInUser.getRole();
 
-		// Match hashed password (assuming you're using BCrypt)
-		if (!passwordEncoder.matches(password, loggedInUser.getPassword())) {
-			structure.setStatus(HttpStatus.UNAUTHORIZED.value());
-			structure.setMessage("Invalid password");
-			structure.setData(null);
-			return new ResponseEntity<>(structure, HttpStatus.UNAUTHORIZED);
-		}
+	    if (role == Role.ADMIN) {
+	        // Admin can view all employees
+	        responseData = employeeRepository.findAll();
+	    } else if (role == Role.MANAGER) {
+	        // Manager can view their team + self
+	        List<Employee> teamMembers = employeeRepository.findByManager(loggedInUser);
+	        teamMembers.add(loggedInUser); // Include the manager themselves
+	        responseData = teamMembers;
+	    } else {
+	        // Normal employee can view only themselves
+	        responseData = List.of(loggedInUser);
+	    }
 
-		List<Employee> responseData;
+	    structure.setStatus(HttpStatus.OK.value());
+	    structure.setMessage("Login successful");
+	    structure.setData(responseData);
 
-		if ("ADMIN".equalsIgnoreCase(loggedInUser.getRole().name())) {
-			responseData = employeeRepository.findAll();
-		} else {
-			responseData = List.of(loggedInUser);
-		}
-
-		structure.setStatus(HttpStatus.OK.value());
-		structure.setMessage("Login successful");
-		structure.setData(responseData);
-
-		return new ResponseEntity<>(structure, HttpStatus.OK);
+	    return new ResponseEntity<>(structure, HttpStatus.OK);
 	}
+
 
 
 //	ServiceImpl layer for updating the employee

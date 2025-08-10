@@ -10,7 +10,7 @@ import com.mobtions.mira.util.ResponseStructure;
 
 public interface EmployeeService {
 
-	ResponseEntity<ResponseStructure<Employee>> addEmployee(EmployeeRequestDTO employee);
+
 
 	ResponseEntity<ResponseStructure<List<Employee>>> fetchAllEmployees();
 
@@ -21,7 +21,8 @@ public interface EmployeeService {
 
 	ResponseEntity<ResponseStructure<List<Employee>>> login(String email, String password);
 
-//	Service layer for updating the emp
 	ResponseEntity<ResponseStructure<Employee>> updateEmployeeDetail(Employee employee, int employeeId);
+
+	ResponseEntity<ResponseStructure<Employee>> addEmployee(EmployeeRequestDTO employee);
 
 }

@@ -31,9 +31,16 @@ public class LeaveController {
 		return leaveService.applyLeave(leave, employeeId);
 	}
 
+
 	@PutMapping("/{leaveId}/status/{leaveStatus}/by/{approverId}")
 	public ResponseEntity<ResponseStructure<Leave>> updateLeaveStatus(@PathVariable int leaveId, @PathVariable LeaveStatus leaveStatus,@PathVariable int approverId) {
 	    return leaveService.updateLeaveStatus(leaveId, approverId, leaveStatus);
+	}
+
+
+	@PutMapping("/{leaveId}/by/{approverId}")
+	public ResponseEntity<ResponseStructure<Leave>> approveLeave(@PathVariable int leaveId, @PathVariable int approverId) {
+	    return leaveService.approveLeave(leaveId, approverId);
 	}
 
 	
