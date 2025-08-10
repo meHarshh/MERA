@@ -1,6 +1,7 @@
 package com.mobtions.mira.serviceimpl;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -57,6 +58,26 @@ public class RemarkServiceImpl implements RemarkService {
 
 	    return new ResponseEntity<>(structure, HttpStatus.CREATED);
 	}
+
+	
+	@Override
+	public ResponseEntity<ResponseStructure<List<Remark>>> fetchRemarkBasedOnTaskId(int taskId) {
+	    taskRepository.findById(taskId)
+	        .orElseThrow(() -> new RuntimeException("Task not found for id: " + taskId));
+
+	    List<Remark> remarks = remarkRepository.findByTask_TaskIdOrderByDateAsc(taskId);
+
+	    ResponseStructure<List<Remark>> structure = new ResponseStructure<>();
+	    structure.setStatus(HttpStatus.OK.value());
+	    structure.setMessage(remarks.isEmpty()
+	        ? "No remarks found for the given task."
+	        : "Remarks fetched successfully for taskId: " + taskId);
+	    structure.setData(remarks);
+
+	    return ResponseEntity.ok(structure);
+	}
+
+
 
 
 }

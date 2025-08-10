@@ -4,7 +4,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.mobtions.mira.enums.Role;
 
 import jakarta.persistence.CascadeType;
@@ -93,8 +92,8 @@ public class Employee {
 	}
 	
 //	Assets
+	@JsonIgnore
 	@OneToMany(mappedBy = "employee", cascade = CascadeType.ALL)
-	@JsonManagedReference
 	private List<Asset> assets; 
 	
 	public List<Asset> getAssets() {

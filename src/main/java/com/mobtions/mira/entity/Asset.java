@@ -2,7 +2,7 @@ package com.mobtions.mira.entity;
 
 import java.time.LocalDate;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.mobtions.mira.enums.AssetsStatus;
 
 import jakarta.persistence.Entity;
@@ -35,7 +35,7 @@ public class Asset {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "employee_id")
-    @JsonBackReference
+    @JsonIgnoreProperties({"hibernateLazyInitializer","handler","assets","password"})
     private Employee employee;
 
 	public int getId() {

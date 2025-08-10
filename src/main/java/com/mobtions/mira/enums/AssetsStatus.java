@@ -1,5 +1,5 @@
 package com.mobtions.mira.enums;
 
 public enum AssetsStatus {
-	ASSIGNED, RETURNED
+	ASSIGNED, RETURNED, DAMAGED
 }
