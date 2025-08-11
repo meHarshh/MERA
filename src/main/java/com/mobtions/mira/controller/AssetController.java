@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,6 +18,8 @@ import com.mobtions.mira.entity.Asset;
 import com.mobtions.mira.service.AssetService;
 import com.mobtions.mira.util.ResponseStructure;
 
+
+@CrossOrigin(allowCredentials = "true", origins = "http://mira.mobtions.com/")
 @RequestMapping("/assets")
 @RestController
 public class AssetController {

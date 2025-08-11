@@ -19,7 +19,7 @@ import com.mobtions.mira.service.EmployeeService;
 import com.mobtions.mira.util.ResponseStructure;
 
 
-@CrossOrigin(allowCredentials = "true", origins = "http://localhost:8081/")
+@CrossOrigin(allowCredentials = "true", origins = "http://mira.mobtions.com/")
 @RestController
 public class EmployeeController {
 
