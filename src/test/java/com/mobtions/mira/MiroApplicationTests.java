@@ -1,4 +1,4 @@
-package com.mobtions.miro;
+package com.mobtions.mira;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
