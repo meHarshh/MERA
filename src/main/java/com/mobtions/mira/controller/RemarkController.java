@@ -17,7 +17,7 @@ import com.mobtions.mira.entity.Remark;
 import com.mobtions.mira.service.RemarkService;
 import com.mobtions.mira.util.ResponseStructure;
 
-@CrossOrigin(allowCredentials = "true", origins = "http://mera.kingsmenrealty.com")
+@CrossOrigin(allowCredentials = "true", origins = "http://mera.kingsmenrealty.com/")
 @RequestMapping("remarks")
 @RestController
 public class RemarkController {
