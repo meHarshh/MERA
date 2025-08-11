@@ -19,7 +19,7 @@ import com.mobtions.mira.service.LeaveService;
 import com.mobtions.mira.util.ResponseStructure;
 
 
-@CrossOrigin(allowCredentials = "true", origins = "http://mira.mobtions.com/")
+@CrossOrigin(allowCredentials = "true", origins = "http://mera.kingsmenrealty.com")
 @RequestMapping(value = "leaves")
 @RestController
 public class LeaveController {

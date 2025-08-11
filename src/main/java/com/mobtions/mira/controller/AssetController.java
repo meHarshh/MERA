@@ -19,7 +19,7 @@ import com.mobtions.mira.service.AssetService;
 import com.mobtions.mira.util.ResponseStructure;
 
 
-@CrossOrigin(allowCredentials = "true", origins = "http://mira.mobtions.com/")
+@CrossOrigin(allowCredentials = "true", origins = "http://mera.kingsmenrealty.com")
 @RequestMapping("/assets")
 @RestController
 public class AssetController {
