@@ -13,6 +13,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Entity
 public class Asset {
 
@@ -35,7 +36,7 @@ public class Asset {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "employee_id")
-    @JsonIgnoreProperties({"hibernateLazyInitializer","handler","assets","password"})
+//    @JsonIgnoreProperties({"hibernateLazyInitializer","handler","assets","password"})
     private Employee employee;
 
 	public int getId() {
