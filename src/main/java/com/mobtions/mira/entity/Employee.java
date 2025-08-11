@@ -3,8 +3,13 @@ package com.mobtions.mira.entity;
 import java.time.LocalDate;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+<<<<<<< HEAD
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+=======
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+>>>>>>> origin/master
 import com.mobtions.mira.enums.Role;
 
 import jakarta.persistence.CascadeType;
@@ -15,7 +20,11 @@ import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 
+<<<<<<< HEAD
 @JsonIgnoreProperties({"manager", "assets", "remarks", "hibernateLazyInitializer", "handler"})
+=======
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "employeeId")
+>>>>>>> origin/master
 @Entity
 public class Employee {
 
