@@ -87,30 +87,33 @@ public class TaskServiceImpl implements TaskService{
 	}
 
 
+	
+
+
 	@Override
-	public ResponseEntity<ResponseStructure<Task>> updateTask(Task task) {
+	public ResponseEntity<ResponseStructure<Task>> updateTask(Task task, int taskId) {
 	    ResponseStructure<Task> structure = new ResponseStructure<>();
 
-	    // Basic validation
-	    if (task == null || task.getTaskId() <= 0) {
+	    // --- Basic validation ---
+	    if (task == null) {
 	        structure.setStatus(HttpStatus.BAD_REQUEST.value());
-	        structure.setMessage("Task or valid taskId is required");
+	        structure.setMessage("Task object is required");
 	        structure.setData(null);
 	        return new ResponseEntity<>(structure, HttpStatus.BAD_REQUEST);
 	    }
 
-	    // Load existing task
-	    Optional<Task> optional = taskRepository.findById(task.getTaskId());
+	    // --- Fetch existing task using taskId parameter ---
+	    Optional<Task> optional = taskRepository.findById(taskId);
 	    if (optional.isEmpty()) {
 	        structure.setStatus(HttpStatus.NOT_FOUND.value());
-	        structure.setMessage("Task not found with ID: " + task.getTaskId());
+	        structure.setMessage("Task not found with ID: " + taskId);
 	        structure.setData(null);
 	        return new ResponseEntity<>(structure, HttpStatus.NOT_FOUND);
 	    }
 
 	    Task existing = optional.get();
 
-	    // ---- Partial merge: only overwrite when a new value is provided ----
+	    // --- Partial update: only overwrite if value is provided ---
 	    if (task.getTitle() != null && !task.getTitle().isBlank()) {
 	        existing.setTitle(task.getTitle());
 	    }
@@ -136,33 +139,29 @@ public class TaskServiceImpl implements TaskService{
 	        existing.setReassignedTo(task.getReassignedTo());
 	    }
 
-	    // Remarks handling:
-	    // Append any provided remarks to the existing list and fix the back-reference.
-	    // (Safer default than replacing, avoids orphan issues unless orphanRemoval is enabled.)
+	    // --- Remarks handling (append safely) ---
 	    if (task.getRemarks() != null && !task.getRemarks().isEmpty()) {
 	        if (existing.getRemarks() == null) {
 	            existing.setRemarks(new java.util.ArrayList<>());
 	        }
 	        for (Remark r : task.getRemarks()) {
 	            if (r != null) {
-	                r.setTask(existing);              // maintain owning side
-	                existing.getRemarks().add(r);     // append
+	                r.setTask(existing);               // maintain owning side
+	                existing.getRemarks().add(r);      // append
 	            }
 	        }
 	    }
 
-	    // Persist
+	    // --- Persist updated task ---
 	    Task saved = taskRepository.save(existing);
 
+	    // --- Prepare response ---
 	    structure.setStatus(HttpStatus.OK.value());
 	    structure.setMessage("Task updated successfully");
 	    structure.setData(saved);
+
 	    return new ResponseEntity<>(structure, HttpStatus.OK);
 	}
-
-
-
-
 
 
 }

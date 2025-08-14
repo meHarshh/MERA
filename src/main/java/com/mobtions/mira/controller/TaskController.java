@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -37,9 +38,9 @@ public class TaskController {
 		return taskService.fetchAllTask();
 	}
 	
-	@PutMapping
-	private ResponseEntity<ResponseStructure<Task>> updateTask(@RequestBody Task task){
-		return taskService.updateTask(task);
+	@PutMapping(value = "/{taskId}")
+	private ResponseEntity<ResponseStructure<Task>> updateTask(@RequestBody Task task, @PathVariable int taskId){
+		return taskService.updateTask(task, taskId);
 	}
 	
 }
