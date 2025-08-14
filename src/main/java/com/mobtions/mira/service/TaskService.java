@@ -14,4 +14,6 @@ public interface TaskService {
 
 	ResponseEntity<ResponseStructure<List<Task>>> fetchAllTask();
 
+	ResponseEntity<ResponseStructure<Task>> updateTask(Task task);
+
 }

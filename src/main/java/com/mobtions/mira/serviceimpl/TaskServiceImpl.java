@@ -1,6 +1,7 @@
 package com.mobtions.mira.serviceimpl;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.mobtions.mira.dto.TaskRequestDTO;
 import com.mobtions.mira.entity.Employee;
+import com.mobtions.mira.entity.Remark;
 import com.mobtions.mira.entity.Task;
 import com.mobtions.mira.enums.TaskStatus;
 import com.mobtions.mira.repo.EmployeeRepository;
@@ -83,6 +85,82 @@ public class TaskServiceImpl implements TaskService{
 
 	    return new ResponseEntity<>(structure, HttpStatus.OK);
 	}
+
+
+	@Override
+	public ResponseEntity<ResponseStructure<Task>> updateTask(Task task) {
+	    ResponseStructure<Task> structure = new ResponseStructure<>();
+
+	    // Basic validation
+	    if (task == null || task.getTaskId() <= 0) {
+	        structure.setStatus(HttpStatus.BAD_REQUEST.value());
+	        structure.setMessage("Task or valid taskId is required");
+	        structure.setData(null);
+	        return new ResponseEntity<>(structure, HttpStatus.BAD_REQUEST);
+	    }
+
+	    // Load existing task
+	    Optional<Task> optional = taskRepository.findById(task.getTaskId());
+	    if (optional.isEmpty()) {
+	        structure.setStatus(HttpStatus.NOT_FOUND.value());
+	        structure.setMessage("Task not found with ID: " + task.getTaskId());
+	        structure.setData(null);
+	        return new ResponseEntity<>(structure, HttpStatus.NOT_FOUND);
+	    }
+
+	    Task existing = optional.get();
+
+	    // ---- Partial merge: only overwrite when a new value is provided ----
+	    if (task.getTitle() != null && !task.getTitle().isBlank()) {
+	        existing.setTitle(task.getTitle());
+	    }
+	    if (task.getDescription() != null) {
+	        existing.setDescription(task.getDescription());
+	    }
+	    if (task.getAssignedDate() != null) {
+	        existing.setAssignedDate(task.getAssignedDate());
+	    }
+	    if (task.getDeadline() != null) {
+	        existing.setDeadline(task.getDeadline());
+	    }
+	    if (task.getStatus() != null) {
+	        existing.setStatus(task.getStatus());
+	    }
+	    if (task.getAssignedBy() != null) {
+	        existing.setAssignedBy(task.getAssignedBy());
+	    }
+	    if (task.getAssignedTo() != null) {
+	        existing.setAssignedTo(task.getAssignedTo());
+	    }
+	    if (task.getReassignedTo() != null) {
+	        existing.setReassignedTo(task.getReassignedTo());
+	    }
+
+	    // Remarks handling:
+	    // Append any provided remarks to the existing list and fix the back-reference.
+	    // (Safer default than replacing, avoids orphan issues unless orphanRemoval is enabled.)
+	    if (task.getRemarks() != null && !task.getRemarks().isEmpty()) {
+	        if (existing.getRemarks() == null) {
+	            existing.setRemarks(new java.util.ArrayList<>());
+	        }
+	        for (Remark r : task.getRemarks()) {
+	            if (r != null) {
+	                r.setTask(existing);              // maintain owning side
+	                existing.getRemarks().add(r);     // append
+	            }
+	        }
+	    }
+
+	    // Persist
+	    Task saved = taskRepository.save(existing);
+
+	    structure.setStatus(HttpStatus.OK.value());
+	    structure.setMessage("Task updated successfully");
+	    structure.setData(saved);
+	    return new ResponseEntity<>(structure, HttpStatus.OK);
+	}
+
+
 
 
 
